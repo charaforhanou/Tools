@@ -3,23 +3,30 @@ import pytesseract
 from PIL import Image
 import fitz
 import os
+from docx import Document
 
 # Function to extract text from image using pytesseract
 def extract_text_from_image(image):
     text = pytesseract.image_to_string(image)
     return text
 
-# Function to transform PDF to document
+
 def pdf_to_document(pdf_path, output_path):
     doc = fitz.open(pdf_path)
     text = ""
     for page in doc:
         text += page.get_text()
 
-    with open(output_path, "w") as f:
-        f.write(text)
+    # Create a new Word document
+    docx_document = Document()
+    docx_document.add_paragraph(text)
+
+    # Save the document
+    docx_document.save(output_path)
 
     return output_path
+
+
 
 # Function to extract code from image
 def extract_code_from_image(image):
@@ -43,20 +50,34 @@ def main():
             text = extract_text_from_image(image)
             st.write("Extracted Text:")
             st.write(text)
-
     elif task == "PDF to Document":
         st.subheader("PDF to Document")
         uploaded_pdf = st.file_uploader("Upload a PDF", type=["pdf"])
 
         if uploaded_pdf is not None:
             with st.spinner('Converting PDF to Document...'):
+                # Save the uploaded PDF to a temporary location
+                with open("temp.pdf", "wb") as f:
+                    f.write(uploaded_pdf.read())
+                
+                # Convert the uploaded PDF to a document
                 output_path = "output_document.txt"
-                output_path = pdf_to_document(uploaded_pdf, output_path)
+                output_path = pdf_to_document("temp.pdf", output_path)
+                
+                # Display a success message
                 st.success(f"Document created at {output_path}")
 
-    elif task == "Extract Code from Image":
-        st.subheader("Extract Code from Image")
-        st.warning("This feature is not yet implemented.")
+                # Remove the temporary PDF file
+                os.remove("temp.pdf")
+
+                # Add a download button for the converted document
+                st.download_button(
+                    label="Download Document",
+                    data=output_path,
+                    file_name="output_document.txt",
+                    mime="text/plain"
+                )
+
 
 if __name__ == "__main__":
     main()
