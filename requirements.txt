@@ -1,1 +1,1 @@
-frontend  fitz  pytesseract
+fitz  pytesseract
