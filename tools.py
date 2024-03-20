@@ -2,6 +2,7 @@ import streamlit as st
 import pytesseract
 from PIL import Image
 #pip install fitz
+#pip install frontend
 import fitz
 import os
 from docx import Document
